@@ -1,6 +1,16 @@
 'use strict'
 
 let choices = ['rock', 'paper', 'scissors'];
+let pointLimit = 5;
+let playerPoints = 0;
+let computerPoints = 0;
+let gameOver = true;
+
+let buttons = document.querySelectorAll('button');
+buttons.forEach((button) => button.addEventListener('click', startRound));
+
+let btnNew =  document.querySelector('#newGame');
+btnNew.addEventListener('click', startGame);
 
 function computerPlay() {
     let rng = Math.floor(Math.random()*3);
@@ -16,9 +26,11 @@ function playRound(playerInput, computerSelection) {
     switch (result) {
         case 'win':
             output = `You win! ${playerSelection} beats ${computerSelection}`;
+            playerPoints ++;
         break;
         case 'lose':
             output = `You lose! ${computerSelection} beats ${playerSelection}`;
+            computerPoints ++;
         break;
         case 'draw':
             output = `Draw! Both picked ${playerSelection}`;
@@ -53,26 +65,47 @@ function capitalize(word) {
     return capitalized;
 }
 
-function game() {
-    let numberOfRounds = 5;
-    let currentLeader  = 0;
-    for (let round = 0; round < numberOfRounds; round++) {
-        console.log(`Game ${round+1}`);
-        let playerSelection = prompt("Rock, Paper or Scissors?")
-        let roundResult = (playRound(playerSelection, computerPlay()));
-        if (roundResult.startsWith('You win')) {
-            currentLeader ++;
-        }
-        if (roundResult.startsWith('You lose')) {
-            currentLeader --;
-        }
-        if(!roundResult.startsWith('You')) {
-            round--;
-        }
-        console.log(roundResult);
+
+function startRound(event) {
+    if(gameOver) {
+        return;
     }
-    let winner = (currentLeader > 0) ? "You" : "The Computer";
-    console.log(`${winner} won the best of ${numberOfRounds}!`)
+    let playerSelection = event.target.id;
+    let roundResult = playRound(playerSelection, computerPlay());
+    let score = document.querySelector('#score');
+    let resultDisplay = document.querySelector('#roundResult');
+    score.textContent = `Player ${playerPoints} - ${computerPoints} Computer`;
+    resultDisplay.textContent = roundResult;
+    if(Math.max(playerPoints, computerPoints) >= pointLimit) {
+        gameOver = true;
+        endGame();
+    }
 }
 
-game();
+function endGame() {
+    let resultDisplay = document.querySelector('#result');
+    resultDisplay.textContent = (playerPoints > computerPoints) ? 'Congratulations, you won!' : 'You lost.'; 
+    reverseButtons();
+}
+
+function reverseButtons() {
+    let buttons = document.querySelectorAll('button');
+    for (let button of Array.from(buttons)) {
+        button.hidden = !button.hidden;
+    }
+}
+
+function startGame() {
+    gameOver = false;
+    reverseButtons();
+    playerPoints = 0;
+    computerPoints = 0;
+    let score = document.querySelector('#score');
+    score.textContent = `Player ${playerPoints} - ${computerPoints} Computer`;
+    let resultDisplay = document.querySelector('#result');
+    resultDisplay.textContent = "";
+
+    let btnNew =  document.querySelector('#newGame');
+    btnNew.hidden = true;
+}
+
